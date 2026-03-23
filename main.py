@@ -6,7 +6,7 @@ from collections import Counter
 if len(sys.argv) < 2:
     print("Użycie:")
     print("  python3 main.py camera")
-    print("  python3 main.py video  <ścieżka do pliku>")
+    print("  python3 main.py video <ścieżka_do_pliku_wideo>")
     sys.exit(1)
 
 mode = sys.argv[1]
@@ -67,7 +67,10 @@ def detect_letter(lm):
 
     return "Brak"
 
-while cap.isOpened():
+while True:
+    if not cap.isOpened():
+        break
+
     success, frame = cap.read()
     if not success:
         break
@@ -99,7 +102,11 @@ while cap.isOpened():
 
     cv2.imshow("Program", frame)
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    key = cv2.waitKey(1) & 0xFF
+    if key == ord('q'):
+        break
+
+    if cv2.getWindowProperty("Program", cv2.WND_PROP_VISIBLE) < 1:
         break
 
 cap.release()
