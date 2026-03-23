@@ -2,7 +2,7 @@ Aby uruchomić projekt lokalnie na linux, wykonaj poniższe kroki:
 
 1. **Stwórz środowisko wirtualne:**
    ```bash
-   python -m venv venv
+   python3 -m venv venv
    ```
 2. **Aktywuj środowisko**
     ```bash
