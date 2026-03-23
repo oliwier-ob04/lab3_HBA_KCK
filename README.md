@@ -15,7 +15,7 @@ cd lab3_HBA_KCK
 
 python3 -m venv venv
 source venv/bin/activate  # na Linux
-# .\venv\Scripts\activate # na Windows
+.\venv\Scripts\activate # na Windows
 
 pip install --upgrade pip
 pip install -r requirements.txt
@@ -37,10 +37,4 @@ python3 main.py camera
 
 ```bash
 python3 main.py video <ścieżka_do_pliku_wideo>
-```
-
-Przykład:
-
-```bash
-python3 main.py video ./video_zespolu.mp4
 ```
