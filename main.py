@@ -1,14 +1,39 @@
+import sys
 import cv2
 import mediapipe as mp
 from collections import Counter
 
+if len(sys.argv) < 2:
+    print("Użycie:")
+    print("  python3 main.py camera")
+    print("  python3 main.py video <ścieżka_do_pliku_wideo>")
+    sys.exit(1)
+
+mode = sys.argv[1]
+
+if mode == "camera":
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+elif mode == "video":
+    if len(sys.argv) < 3:
+        print("Użycie dla trybu video:")
+        print("  python3 main.py video <ścieżka_do_pliku_wideo>")
+        sys.exit(1)
+    video_path = sys.argv[2]
+    cap = cv2.VideoCapture(video_path)
+else:
+    print("Nieznany tryb:", mode)
+    print("Dozwolone tryby: 'camera' lub 'video'")
+    sys.exit(1)
+
+if not cap.isOpened():
+    print("Nie można otworzyć źródła wideo.")
+    sys.exit(1)
+
 mp_pose = mp.solutions.pose
 mp_drawing = mp.solutions.drawing_utils
 pose = mp_pose.Pose(model_complexity=0)
-
-cap = cv2.VideoCapture(0)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 history = []
 buffer_size = 7
@@ -42,9 +67,13 @@ def detect_letter(lm):
 
     return "Brak"
 
-while cap.isOpened():
+while True:
+    if not cap.isOpened():
+        break
+
     success, frame = cap.read()
-    if not success: break
+    if not success:
+        break
 
     img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = pose.process(img_rgb)
@@ -54,19 +83,30 @@ while cap.isOpened():
     if results.pose_landmarks:
         mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
         current_letter = detect_letter(results.pose_landmarks.landmark)
-        
+
         history.append(current_letter)
         if len(history) > buffer_size:
             history.pop(0)
-        
+
         stable_letter = Counter(history).most_common(1)[0][0]
 
-        cv2.putText(frame, f"{stable_letter}", (50, 90), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 3)
+        cv2.putText(
+            frame,
+            f"{stable_letter}",
+            (50, 90),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1.5,
+            (0, 255, 0),
+            3,
+        )
 
     cv2.imshow("Program", frame)
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    key = cv2.waitKey(1) & 0xFF
+    if key == ord('q'):
+        break
+
+    if cv2.getWindowProperty("Program", cv2.WND_PROP_VISIBLE) < 1:
         break
 
 cap.release()
